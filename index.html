@@ -14,7 +14,9 @@
 <body>
     <script>
     // if initializeDefaultPlugins returns false, we cannot play sound
-    if (!createjs.Sound.initializeDefaultPlugins()) { return; }
+    if (!createjs.Sound.initializeDefaultPlugins()) { 
+        //return; 
+    }
     var audioPath = "";
     var manifest = [
         {id:"die", src:"die.mp3"}
