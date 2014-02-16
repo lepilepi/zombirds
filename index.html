@@ -1,0 +1,174 @@
+<html>
+<head>
+    <title>pixi.js example 1</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+    </style>
+    <script src="pixi.js"></script>
+    <script src="soundjs-0.5.2.min.js"></script>
+</head>
+<body>
+    <script>
+    // if initializeDefaultPlugins returns false, we cannot play sound
+    if (!createjs.Sound.initializeDefaultPlugins()) { return; }
+    var audioPath = "";
+    var manifest = [
+        {id:"die", src:"die.mp3"}
+    ];
+    createjs.Sound.addEventListener("loadComplete", handleLoad);
+    createjs.Sound.registerManifest(manifest, audioPath);
+    function handleLoad(event) {
+        // Do something with the loaded sound
+    }
+
+
+
+    FALL_SPEED = 7;
+
+    function choose(choices) {
+      index = Math.floor(Math.random() * choices.length);
+      return choices[index];
+    }
+    function remove(el, arr){
+        var index = arr.indexOf(el);
+        if (index > -1) {
+            arr.splice(index, 1);
+        }
+    }
+
+    var birds = new Array();
+
+    function add_bird(){
+        var sprite = new PIXI.Sprite(texture);
+
+        // center the sprites anchor point
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = 0.5;
+     
+        // move the sprite t the center of the screen
+        sprite.position.x = Math.floor((Math.random()*280)+230); // 230 - 510
+        sprite.position.y = 130;
+
+        sprite.scale.x = 0.2;
+        sprite.scale.y = 0.2;
+        
+        sprite.startx = sprite.position.x;
+
+        sprite.setInteractive(true);
+        
+        sprite.tap = function(mouseData){
+            sprite.texture = explosiion_tex;
+            sprite.removeAt = new Date().getTime() + 200;
+            sprite.setInteractive(false);
+            remove(sprite, birds);
+            
+            points += 1;
+            text.setText(points);
+            createjs.Sound.play("die");
+        }
+        sprite.click = sprite.tap
+
+
+        stage.addChildAt(sprite,1);
+        
+        //prepend
+        //birds.unshift(sprite);
+
+        birds.push(sprite);
+    }
+ 
+    // create an new instance of a pixi stage
+    var stage = new PIXI.Stage('000000');
+ 
+    // create a renderer instance.
+    var renderer = PIXI.autoDetectRenderer(800, 600);
+ 
+    // add the renderer view element to the DOM
+    document.body.appendChild(renderer.view);
+ 
+    requestAnimFrame( animate );
+
+
+    // create a texture from an image path
+    var texture = PIXI.Texture.fromImage("madar.png");
+    var explosiion_tex = PIXI.Texture.fromImage("bumm.png");
+    
+
+    var bg = new PIXI.Sprite(PIXI.Texture.fromImage("bg.jpg"));
+    bg.position.x = 0;
+    bg.position.y = 0;
+    stage.addChild(bg);
+
+    var points = 0
+    var text = new PIXI.Text(0, {font:"50px Arial", fill:"red", align:"left"});
+    text.anchor.x = 1;
+    text.position.x = 790;
+    text.position.y = 5;
+    stage.addChild(text);
+
+    var hearts = new Array();
+    for (var i=0;i<5;i++){
+       var heart = new PIXI.Sprite(PIXI.Texture.fromImage("heart.png"));
+       heart.position.x = i*68+10;
+       heart.position.y = 10;
+       stage.addChild(heart);
+       hearts.push(heart);
+    }
+    
+
+    add_bird();
+
+    var prev = new Date().getTime();
+    var next_bird = new Date().getTime() + Math.floor((Math.random()*400)+100);
+
+    function animate() {
+        var td = new Date().getTime() - prev
+
+        if (new Date().getTime() >= next_bird){
+            add_bird();
+            next_bird = new Date().getTime() + Math.floor((Math.random()*400)+100);
+        }
+
+        
+        birds.forEach(function(bird) {
+            bird.position.y += td/4000 * 470;
+            var goal_x = 680/280 * (bird.startx-230) - 230
+            bird.position.x += td/4000 * goal_x;
+            
+            bird.scale.x += td/4000 * 5;
+            bird.scale.y += td/4000 * 5;
+
+            if (bird.position.y > 600){
+                stage.removeChild(bird);
+                remove(bird, birds);
+
+                var h = hearts.pop();
+                stage.removeChild(h);
+            }
+
+        });
+
+        stage.children.forEach(function(sprite) {
+            if (sprite.removeAt && (sprite.removeAt <= new Date().getTime())){
+                stage.removeChild(sprite);
+            }
+        })
+
+
+        if (hearts.length){
+            requestAnimFrame( animate );
+        }
+
+        // render the stage   
+        renderer.render(stage);
+        prev = new Date().getTime();
+    }
+ 
+    </script>
+ 
+    </body>
+</html>
